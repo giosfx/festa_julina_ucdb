@@ -1,59 +1,160 @@
-# Turborepo starter
+# 🎪 Sistema Festa Julina - Monorepo
 
-This Turborepo starter is maintained by the Turborepo core team.
+Monorepo desenvolvido com **Turborepo** para sistema de gestão de festa julina.
 
-## Using this example
+## 🏗️ Arquitetura
 
-Run the following command:
+Este monorepo inclui as seguintes aplicações e pacotes:
 
-```sh
-npx create-turbo@latest
+### 📱 Aplicações
+
+- `frontend`: Aplicação **Next.js** (TypeScript) - Interface do usuário
+- `backend`: API **NestJS** (TypeScript) - Servidor e lógica de negócio
+
+### 📦 Pacotes Compartilhados
+
+- `@repo/ui`: Biblioteca de componentes React compartilhados
+- `@repo/eslint-config`: Configurações ESLint (Next.js, NestJS, base)
+- `@repo/typescript-config`: Configurações TypeScript compartilhadas
+
+## 🚀 Como usar
+
+### Pré-requisitos
+
+- Node.js >= 18
+- pnpm >= 9.0.0
+
+### Instalação
+
+```bash
+# Clone o repositório
+git clone <repo-url>
+cd festa_julina_ucdb
+
+# Instale as dependências
+pnpm install
 ```
 
-## What's inside?
+### Desenvolvimento
 
-This Turborepo includes the following packages/apps:
-
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-pnpm build
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
+```bash
+# Executar todas as aplicações em modo desenvolvimento
 pnpm dev
+
+# Executar apenas o frontend (porta 3000)
+pnpm dev:frontend
+
+# Executar apenas o backend (porta 3001)
+pnpm dev:backend
 ```
 
-### Remote Caching
+### Produção
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+```bash
+# Build de todas as aplicações
+pnpm build
+
+# Executar em produção
+pnpm start
+```
+
+### Scripts Úteis
+
+```bash
+# Linting
+pnpm lint              # Verificar todos os projetos
+pnpm lint:fix          # Corrigir problemas automaticamente
+
+# Formatação
+pnpm format            # Formatar todo o código
+pnpm format:check      # Verificar formatação
+
+# Testes
+pnpm test              # Executar todos os testes
+pnpm test:e2e          # Executar testes E2E
+
+# Verificação de tipos
+pnpm check-types       # Verificar TypeScript
+
+# Limpeza
+pnpm clean             # Limpar builds e caches
+```
+
+## 🌐 URLs das Aplicações
+
+- **Frontend**: http://localhost:3000
+- **Backend**: http://localhost:3001
+- **API Docs**: http://localhost:3001/api/docs
+
+## 🛠️ Tecnologias Utilizadas
+
+### Frontend
+
+- **Next.js 15** - Framework React
+- **TypeScript** - Tipagem estática
+- **Tailwind CSS** - Estilização
+- **ESLint + Prettier** - Code quality
+
+### Backend
+
+- **NestJS** - Framework Node.js
+- **TypeScript** - Tipagem estática
+- **Swagger** - Documentação da API
+- **Class Validator** - Validação de dados
+- **Jest** - Testes
+
+### DevOps
+
+- **Turborepo** - Build system e monorepo
+- **pnpm** - Gerenciador de pacotes
+- **ESLint** - Linting compartilhado
+- **Prettier** - Formatação de código
+
+## 📁 Estrutura do Projeto
+
+```
+festa_julina_ucdb/
+├── apps/
+│   ├── frontend/          # Next.js app
+│   └── backend/           # NestJS API
+├── packages/
+│   ├── ui/                # Componentes compartilhados
+│   ├── eslint-config/     # Configurações ESLint
+│   └── typescript-config/ # Configurações TypeScript
+├── .env.example           # Variáveis de ambiente
+├── turbo.json            # Configuração Turborepo
+└── pnpm-workspace.yaml   # Configuração workspace
+```
+
+## 🔧 Configuração de Ambiente
+
+Copie o arquivo `.env.example` para `.env` e configure as variáveis necessárias:
+
+```bash
+cp .env.example .env
+```
+
+## 🚀 Deploy
+
+### Vercel (Recomendado para Frontend)
+
+- Conecte seu repositório ao Vercel
+- Configure build command: `pnpm build --filter=frontend`
+- Configure output directory: `apps/frontend/.next`
+
+### Backend Deploy
+
+- Configure as variáveis de ambiente em produção
+- Build command: `pnpm build --filter=backend`
+- Start command: `pnpm start --filter=backend`
+
+## 🤝 Contribuição
+
+1. Faça um fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/nova-feature`)
+3. Commit suas mudanças (`git commit -m 'Adiciona nova feature'`)
+4. Push para a branch (`git push origin feature/nova-feature`)
+5. Abra um Pull Request
 
 Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
 

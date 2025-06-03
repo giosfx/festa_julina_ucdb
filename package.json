@@ -1,14 +1,30 @@
 {
   "name": "festa_julina_ucdb",
   "private": true,
+  "description": "Monorepo para sistema de festa julina - Frontend Next.js + Backend NestJS",
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "dev:concurrent": "concurrently \"pnpm dev:frontend\" \"pnpm dev:backend\" --names \"frontend,backend\" --prefix-colors \"cyan,green\"",
+    "dev:frontend": "turbo run dev --filter=frontend",
+    "dev:backend": "turbo run dev --filter=backend",
+    "start": "turbo run start",
+    "start:frontend": "turbo run start --filter=frontend",
+    "start:backend": "turbo run start --filter=backend",
     "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo run check-types"
+    "lint:fix": "turbo run lint:fix",
+    "format": "prettier --write \"**/*.{ts,tsx,md,json,js,mjs}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,md,json,js,mjs}\"",
+    "check-types": "turbo run check-types",
+    "test": "turbo run test",
+    "test:e2e": "turbo run test:e2e",
+    "clean": "turbo run clean",
+    "install:all": "pnpm install"
   },
   "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "concurrently": "^9.1.2",
     "prettier": "^3.5.3",
     "turbo": "^2.5.4",
     "typescript": "5.8.2"

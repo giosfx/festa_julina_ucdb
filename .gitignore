@@ -36,3 +36,20 @@ yarn-error.log*
 # Misc
 .DS_Store
 *.pem
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Backend specific
+apps/backend/dist/
+
+# Logs
+*.log
+logs/
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
