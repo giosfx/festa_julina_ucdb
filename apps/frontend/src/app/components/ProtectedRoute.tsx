@@ -31,17 +31,17 @@ export function ProtectedRoute({
                 return;
             }
 
-            // Verificar roles se especificadas
-            if (requiredRoles.length > 0 && user) {
-                const hasRequiredRole = requiredRoles.some(role =>
-                    user.roles.includes(role)
-                );
+            // // Verificar roles se especificadas
+            // if (requiredRoles.length > 0 && user) {
+            //     const hasRequiredRole = requiredRoles.some(role =>
+            //         user.roles.includes(role)
+            //     );
 
-                if (!hasRequiredRole) {
-                    router.push('/unauthorized');
-                    return;
-                }
-            }
+            //     if (!hasRequiredRole) {
+            //         router.push('/unauthorized');
+            //         return;
+            //     }
+            // }
         }
     }, [mounted, isAuthenticated, isLoading, user, requiredRoles, router, redirectTo]);
 
@@ -54,8 +54,8 @@ export function ProtectedRoute({
         );
     }
 
-    // Não renderiza nada se não autenticado ou sem permissão
-    if (!isAuthenticated || (requiredRoles.length > 0 && user && !requiredRoles.some(role => user.roles.includes(role)))) {
+    // Não renderiza nada se não autenticado ou sem permissão ->  || (requiredRoles.length > 0 && user && !requiredRoles.some(role => user.roles.includes(role)))
+    if (!isAuthenticated) {
         return null;
     }
 
