@@ -14,10 +14,21 @@
     "skipLibCheck": true,
     "strict": true,
     "strictNullChecks": true,
+    "strictPropertyInitialization": false,
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": true,
     "strictBindCallApply": true,
     "noFallthroughCasesInSwitch": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "paths": {
+      "@repo/shared": [
+        "../../packages/shared/src/index.ts"
+      ],
+      "@repo/shared/*": [
+        "../../packages/shared/src/*"
+      ]
+    },
     "types": [
       "node",
       "jest"

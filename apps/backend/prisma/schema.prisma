@@ -1,0 +1,46 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model Participante {
+  id        Int      @id @default(autoincrement())
+  nome      String   @db.VarChar(255)
+  cpf       String   @unique @db.VarChar(11)
+  ra        String?  @db.VarChar(6)
+  rf        String?  @db.VarChar(4)
+  createdAt DateTime @default(now()) @map("created_at") @db.DateTime2
+  updatedAt DateTime @updatedAt @map("updated_at") @db.DateTime2
+
+  // Relacionamentos
+  ingressos Ingresso[]
+
+  @@map("participantes")
+  @@index([cpf], name: "IDX_PARTICIPANTES_CPF")
+}
+
+model Ingresso {
+  id                 Int      @id @default(autoincrement())
+  participanteId     Int      @map("participante_id")
+  quantidade         Int
+  dataCompra         DateTime @map("data_compra") @db.DateTime2
+  funcionarioCheckin String?  @map("funcionario_checkin") @db.VarChar(100)
+  checkinRealizado   Boolean  @default(false) @map("checkin_realizado")
+  createdAt          DateTime @default(now()) @map("created_at") @db.DateTime2
+  updatedAt          DateTime @updatedAt @map("updated_at") @db.DateTime2
+
+  // Relacionamentos
+  participante Participante @relation(fields: [participanteId], references: [id], onDelete: Cascade)
+
+  @@map("ingressos")
+  @@index([participanteId], name: "IDX_INGRESSOS_PARTICIPANTE_ID")
+  @@index([dataCompra], name: "IDX_INGRESSOS_DATA_COMPRA")
+  @@index([checkinRealizado], name: "IDX_INGRESSOS_CHECKIN")
+}
