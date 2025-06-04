@@ -1,0 +1,76 @@
+# Dockerfile para o Backend NestJS
+FROM node:18-alpine AS base
+
+# Instalar dependências necessárias
+RUN apk add --no-cache libc6-compat
+RUN npm install -g pnpm turbo
+
+# Estágio de preparação - usar turbo prune
+FROM base AS builder
+WORKDIR /app
+COPY . .
+
+# Gerar um monorepo otimizado com turbo prune
+RUN turbo prune backend --docker
+
+# Estágio de instalação
+FROM base AS installer
+WORKDIR /app
+
+# Copiar arquivos de dependências do prune
+COPY --from=builder /app/out/json/ .
+
+# Instalar dependências
+RUN pnpm install --frozen-lockfile
+
+# Copiar código fonte do prune
+COPY --from=builder /app/out/full/ .
+
+# Gerar Prisma client
+WORKDIR /app/apps/backend
+RUN npx prisma generate
+
+# Build do backend
+WORKDIR /app
+RUN pnpm turbo run build --filter=backend
+
+# Estágio de produção
+FROM base AS runner
+WORKDIR /app
+
+# Criar usuário não-root
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nestjs
+
+# Copiar arquivos de configuração do workspace para manter a estrutura
+COPY --from=installer /app/package.json ./
+COPY --from=installer /app/pnpm-workspace.yaml ./
+COPY --from=installer /app/pnpm-lock.yaml ./
+
+# Copiar node_modules preservando links simbólicos
+COPY --from=installer --chown=nestjs:nodejs /app/node_modules ./node_modules
+
+# Copiar o backend compilado e arquivos necessários
+COPY --from=installer /app/apps/backend/dist ./apps/backend/dist
+COPY --from=installer /app/apps/backend/package.json ./apps/backend/package.json
+COPY --from=installer /app/apps/backend/prisma ./apps/backend/prisma
+
+# Copiar pacotes compartilhados necessários
+COPY --from=installer /app/packages/shared ./packages/shared
+
+# Criar diretório .turbo com permissões corretas antes de mudar para usuário não-root
+RUN mkdir -p .turbo && chown -R nestjs:nodejs .turbo
+
+# Definir usuário
+USER nestjs
+
+# Expor porta
+EXPOSE 3001
+
+# Variáveis de ambiente
+ENV NODE_ENV=production
+ENV PORT=3001
+ENV NODE_PATH=/app/node_modules/.pnpm/node_modules
+
+# Comando para iniciar a aplicação a partir do contexto correto
+CMD ["node", "apps/backend/dist/main.js"]

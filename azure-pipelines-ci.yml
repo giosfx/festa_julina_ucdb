@@ -1,0 +1,51 @@
+name: $(Rev:r)
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    exclude:
+      - azure-pipelines-ci.yml
+      - azure-pipelines-cd.yml
+
+stages:
+  - stage: building_backend
+    pool: ucdb-linux
+    dependsOn: []
+    variables:
+      - group: azure
+      - group: festajulina
+    jobs:
+      - job:
+        steps:
+          - task: Docker@2
+            inputs:
+              containerRegistry: 'admucdbcr.azurecr.io'
+              command: 'login'
+          - script: |
+              docker build --build-arg PAT=$SYSTEM_ACCESSTOKEN -f DockerfileBackend -t festajulina-backend:$(Build.BuildNumber) .
+              docker tag festajulina-backend:$(Build.BuildNumber) $(registry_server)/festajulina-backend:$(Build.BuildNumber)
+              docker push $(registry_server)/festajulina-backend:$(Build.BuildNumber)
+            env:
+              SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+
+  - stage: building_frontend
+    dependsOn: []
+    variables:
+      - group: azure
+      - group: festajulina
+    pool:
+      vmImage: ubuntu-latest
+    jobs:
+      - job:
+        steps:
+          - task: Docker@2
+            inputs:
+              containerRegistry: 'admucdbcr.azurecr.io'
+              command: 'login'
+          - script: |
+              docker build --build-arg PAT=$SYSTEM_ACCESSTOKEN -f DockerfileFrontend -t festajulina-frontend:$(Build.BuildNumber) .
+              docker tag festajulina-frontend:$(Build.BuildNumber) $(registry_server)/festajulina-frontend:$(Build.BuildNumber)
+              docker push $(registry_server)/festajulina-frontend:$(Build.BuildNumber)
+            env:
+              SYSTEM_ACCESSTOKEN: $(System.AccessToken)

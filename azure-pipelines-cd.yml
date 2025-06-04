@@ -1,0 +1,87 @@
+trigger: none
+
+resources:
+  pipelines:
+    - pipeline: source
+      source: festa-julina-ucdb-CI
+      trigger:
+        branches:
+          include:
+            - main
+
+stages:
+  - stage: deploy_azure_backend
+    pool: Azure-UCDB
+    dependsOn: []
+    variables:
+      - group: azure
+      - group: festajulina
+    jobs:
+      - deployment:
+        environment: festajulina
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: Docker@2
+                  inputs:
+                    containerRegistry: 'admucdbcr.azurecr.io'
+                    command: 'login'
+                  displayName: Docker login
+                - script: |
+                    set +e
+                    docker stop festajulina-backend
+                    docker rm festajulina-backend
+                    set -e
+                    docker run \
+                      --name festajulina-backend \
+                      -d -p 3001:3001 \
+                      -e DATABASE_URL \
+                      --restart=always \
+                      $(registry_server)/festajulina-backend:$(resources.pipeline.source.runName)
+                    docker ps
+                  env:
+                    DATABASE_URL: $(DATABASE_URL)
+
+  - stage: deploy_azure_frontend
+    pool: Azure-UCDB
+    dependsOn: []
+    variables:
+      - group: azure
+      - group: festajulina
+    jobs:
+      - deployment:
+        environment: festajulina
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: Docker@2
+                  inputs:
+                    containerRegistry: 'admucdbcr.azurecr.io'
+                    command: 'login'
+                  displayName: Docker login
+                - script: |
+                    set +e
+                    docker stop festajulina-frontend
+                    docker rm festajulina-frontend
+                    set -e
+                    docker run \
+                      --name festajulina-frontend \
+                      -d -p 3000:3000 \
+                      -e NEXTAUTH_URL \
+                      -e NEXTAUTH_SECRET \
+                      -e NEXT_PUBLIC_URL_BASE \
+                      -e KEYCLOAK_CLIENT_ID \
+                      -e KEYCLOAK_CLIENT_SECRET \
+                      -e KEYCLOAK_ISSUER \
+                      --restart=always \
+                      $(registry_server)/festajulina-frontend:$(resources.pipeline.source.runName)
+                    docker ps
+                  env:
+                    NEXTAUTH_URL: $(NEXTAUTH_URL)
+                    NEXTAUTH_SECRET: $(NEXTAUTH_SECRET)
+                    NEXT_PUBLIC_URL_BASE: $(NEXT_PUBLIC_URL_BASE)
+                    KEYCLOAK_CLIENT_ID: $(KEYCLOAK_CLIENT_ID)
+                    KEYCLOAK_CLIENT_SECRET: $(KEYCLOAK_CLIENT_SECRET)
+                    KEYCLOAK_ISSUER: $(KEYCLOAK_ISSUER)

@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  # Backend NestJS
+  backend:
+    build:
+      context: .
+      dockerfile: DockerfileBackend
+    container_name: festajulina-backend-dev
+    ports:
+      - '3001:3001'
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=sqlserver://localhost:1433;database=festajulina;user=sa;password=FestJulina2025!;trustServerCertificate=true
+      - PORT=3001
+    depends_on:
+      - postgres
+    networks:
+      - festajulina-network
+
+  # Frontend Next.js
+  frontend:
+    build:
+      context: .
+      dockerfile: DockerfileFrontend
+    container_name: festajulina-frontend-dev
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_URL_BASE=http://localhost:3001
+      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_SECRET=development-secret-key-change-in-production
+      - PORT=3000
+    volumes:
+      - ./apps/frontend/src:/app/src
+      - ./apps/frontend/public:/app/public
+    command: pnpm run dev
+    networks:
+      - festajulina-network
+
+  # Banco de dados PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: festajulina-postgres-dev
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=festajulina
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - festajulina-network
+
+  # Redis para cache (opcional)
+  redis:
+    image: redis:7-alpine
+    container_name: festajulina-redis-dev
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - festajulina-network
+
+  # Nginx para reverse proxy (opcional para produção local)
+  nginx:
+    image: nginx:alpine
+    container_name: festajulina-nginx-dev
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/nginx/ssl
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - festajulina-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  festajulina-network:
+    driver: bridge

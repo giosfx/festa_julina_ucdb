@@ -1,0 +1,58 @@
+# Dockerfile para o Frontend Next.js
+FROM node:18-alpine AS base
+
+# Instalar dependências necessárias
+RUN apk add --no-cache libc6-compat
+RUN npm install -g pnpm
+
+# Estágio de dependências
+FROM base AS deps
+WORKDIR /app
+
+# Copiar arquivos de configuração do workspace
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY packages/ ./packages/
+COPY apps/frontend/package.json ./apps/frontend/
+
+# Instalar dependências
+RUN pnpm install --frozen-lockfile
+
+# Estágio de build
+FROM base AS builder
+WORKDIR /app
+
+# Copiar dependências instaladas
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/packages ./packages
+
+# Copiar código fonte
+COPY . .
+
+# Build do frontend
+RUN pnpm run build --filter=frontend
+
+# Estágio de produção
+FROM base AS runner
+WORKDIR /app
+
+# Criar usuário não-root
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Copiar arquivos necessários
+COPY --from=builder /app/apps/frontend/public ./public
+COPY --from=builder /app/apps/frontend/.next/standalone ./
+COPY --from=builder /app/apps/frontend/.next/static ./.next/static
+
+# Definir usuário
+USER nextjs
+
+# Expor porta
+EXPOSE 3000
+
+# Variáveis de ambiente
+ENV NODE_ENV=production
+ENV PORT=3000
+
+# Comando de inicialização
+CMD ["node", "server.js"]

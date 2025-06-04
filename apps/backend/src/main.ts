@@ -8,7 +8,10 @@ async function bootstrap() {
 
   // Configuração de CORS para permitir comunicação com o frontend
   app.enableCors({
-    origin: ['http://localhost:3000'], // Frontend Next.js
+    origin: [
+      'http://localhost:3000', // Frontend Next.js (desenvolvimento)
+      'https://app-pais.ucdb.br', // Frontend em produção
+    ],
     credentials: true,
   });
 
