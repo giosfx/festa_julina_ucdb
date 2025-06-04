@@ -122,7 +122,7 @@ class AuthService {
     try {
       await apiService.get('/auth/validate', true);
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -144,7 +144,7 @@ class AuthService {
         email: response.email,
         roles: response.roles,
       };
-    } catch (error) {
+    } catch {
       return null;
     }
   }
@@ -201,12 +201,12 @@ class AuthService {
           roles: backendResponse.user.roles,
         },
       };
-    } catch (error) {
-      if (error instanceof APIError) {
-        throw new AuthError(error.message, error.code, error.status);
+    } catch (_) {
+      if (_ instanceof APIError) {
+        throw new AuthError(_.message, _.code, _.status);
       }
-      if (error instanceof AuthError) {
-        throw error;
+      if (_ instanceof AuthError) {
+        throw _;
       }
       throw new AuthError('Erro ao renovar token de acesso');
     }
@@ -225,8 +225,8 @@ class AuthService {
           refresh_token: refreshToken,
         }),
       });
-    } catch (error) {
-      console.error('Erro ao fazer logout:', error);
+    } catch (e) {
+      console.error('Erro ao fazer logout:', e);
       // Não lançar erro aqui para não bloquear o logout local
     }
   }

@@ -32,7 +32,7 @@ function DashboardContent() {
     setSearchResults([]);
 
     try {
-      const results = await participantesService.buscarParticipantes(query);
+      const results = await participantesService.buscarParticipantes({ query });
       setSearchResults(results);
     } catch (error) {
       if (error instanceof APIError) {

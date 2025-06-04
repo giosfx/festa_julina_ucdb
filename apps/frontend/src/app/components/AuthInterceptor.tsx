@@ -36,7 +36,7 @@ export function AuthInterceptor({ children }: AuthInterceptorProps) {
                         }
 
                         return originalFetch(input, init);
-                    } catch (error) {
+                    } catch {
                         // Se refresh falhar, fazer logout
                         authService.clearTokens();
                         router.push('/');

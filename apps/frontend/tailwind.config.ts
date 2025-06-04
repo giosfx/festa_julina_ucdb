@@ -69,13 +69,20 @@ const config: Config = {
         xl: '1280px',
         '2xl': '1536px',
       },
+      // Configuração para mobile-first
+      container: {
+        center: true,
+        padding: {
+          DEFAULT: '1rem',
+          sm: '2rem',
+          lg: '4rem',
+          xl: '5rem',
+          '2xl': '6rem',
+        },
+      },
     },
   },
   plugins: [],
-  // Configuração para mobile-first
-  corePlugins: {
-    container: false, // Usaremos nosso próprio container
-  },
 };
 
 export default config;

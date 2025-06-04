@@ -20,10 +20,14 @@ export interface ParticipanteCreateData {
   tipo: 'academico' | 'funcionario';
 }
 
+export interface ParticipanteSearchParams {
+  query: string;
+}
+
 class ParticipantesService {
-  async buscarParticipantes(query: string): Promise<Participante[]> {
+  async buscarParticipantes(params: ParticipanteSearchParams): Promise<Participante[]> {
     const searchParams = new URLSearchParams({
-      query: query,
+      query: params.query,
     });
 
     return apiService.get<Participante[]>(
@@ -37,14 +41,14 @@ class ParticipantesService {
   }
 
   async criarParticipante(data: ParticipanteCreateData): Promise<Participante> {
-    return apiService.post<Participante>('/participantes', data, true);
+    return apiService.post<Participante, ParticipanteCreateData>('/participantes', data, true);
   }
 
   async atualizarParticipante(
     id: string,
     data: Partial<ParticipanteCreateData>
   ): Promise<Participante> {
-    return apiService.put<Participante>(`/participantes/${id}`, data, true);
+    return apiService.put<Participante, Partial<ParticipanteCreateData>>(`/participantes/${id}`, data, true);
   }
 
   async excluirParticipante(id: string): Promise<void> {

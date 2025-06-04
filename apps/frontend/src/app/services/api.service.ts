@@ -7,7 +7,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 interface RequestConfig {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   headers?: Record<string, string>;
-  body?: any;
+  body?: Record<string, unknown>;
   requiresAuth?: boolean;
 }
 
@@ -101,18 +101,18 @@ class APIService {
     return this.makeRequest<T>(endpoint, { method: 'GET', requiresAuth });
   }
 
-  async post<T>(endpoint: string, data: any, requiresAuth = false): Promise<T> {
+  async post<T, D = Record<string, unknown>>(endpoint: string, data: D, requiresAuth = false): Promise<T> {
     return this.makeRequest<T>(endpoint, {
       method: 'POST',
-      body: data,
+      body: data as unknown as Record<string, unknown>,
       requiresAuth,
     });
   }
 
-  async put<T>(endpoint: string, data: any, requiresAuth = false): Promise<T> {
+  async put<T, D = Record<string, unknown>>(endpoint: string, data: D, requiresAuth = false): Promise<T> {
     return this.makeRequest<T>(endpoint, {
       method: 'PUT',
-      body: data,
+      body: data as unknown as Record<string, unknown>,
       requiresAuth,
     });
   }
