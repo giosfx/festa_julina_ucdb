@@ -30,14 +30,14 @@ export class ParticipantesService {
 
   async findAll(): Promise<Participante[]> {
     return this.prisma.participante.findMany({
-      include: { ingressos: true },
+      include: { checkins: true },
     });
   }
 
   async findOne(id: number): Promise<Participante> {
     const participante = await this.prisma.participante.findUnique({
       where: { id },
-      include: { ingressos: true },
+      include: { checkins: true },
     });
 
     if (!participante) {
@@ -50,7 +50,7 @@ export class ParticipantesService {
   async findByCpf(cpf: string): Promise<Participante> {
     const participante = await this.prisma.participante.findUnique({
       where: { cpf },
-      include: { ingressos: true },
+      include: { checkins: true },
     });
 
     if (!participante) {
@@ -63,7 +63,7 @@ export class ParticipantesService {
   async findByRa(ra: string): Promise<Participante> {
     const participante = await this.prisma.participante.findFirst({
       where: { ra },
-      include: { ingressos: true },
+      include: { checkins: true },
     });
 
     if (!participante) {
@@ -76,7 +76,7 @@ export class ParticipantesService {
   async findByRf(rf: string): Promise<Participante> {
     const participante = await this.prisma.participante.findFirst({
       where: { rf },
-      include: { ingressos: true },
+      include: { checkins: true },
     });
 
     if (!participante) {
@@ -93,7 +93,7 @@ export class ParticipantesService {
           contains: nome,
         },
       },
-      include: { ingressos: true },
+      include: { checkins: true },
     });
   }
 
@@ -149,7 +149,7 @@ export class ParticipantesService {
       searchPromises.push(
         this.prisma.participante.findMany({
           where: { cpf: numericQuery },
-          include: { ingressos: true },
+          include: { checkins: true },
         }),
       );
     }
@@ -159,7 +159,7 @@ export class ParticipantesService {
       searchPromises.push(
         this.prisma.participante.findMany({
           where: { ra: numericQuery },
-          include: { ingressos: true },
+          include: { checkins: true },
         }),
       );
     }
@@ -169,7 +169,7 @@ export class ParticipantesService {
       searchPromises.push(
         this.prisma.participante.findMany({
           where: { rf: numericQuery },
-          include: { ingressos: true },
+          include: { checkins: true },
         }),
       );
     }
@@ -183,7 +183,7 @@ export class ParticipantesService {
               contains: cleanQuery,
             },
           },
-          include: { ingressos: true },
+          include: { checkins: true },
         }),
       );
     }

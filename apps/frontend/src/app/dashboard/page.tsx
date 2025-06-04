@@ -5,6 +5,7 @@ import Header from '../components/Header';
 import SearchBar from '../components/SearchBar';
 import SearchResults from '../components/SearchResults';
 import { ConfirmationModal } from '../components/Modal';
+import { CheckinModal } from '../components/CheckinModal';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { participantesService, type Participante } from '../services/participantes.service';
 import { ingressosService } from '../services/ingressos.service';
@@ -24,6 +25,10 @@ function DashboardContent() {
     quantidade: number;
   } | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // Estados para o modal de check-in
+  const [showCheckinModal, setShowCheckinModal] = useState(false);
+  const [selectedParticipante, setSelectedParticipante] = useState<Participante | null>(null);
 
   // Função de busca integrada com o backend
   const handleSearch = async (query: string) => {
@@ -94,6 +99,12 @@ function DashboardContent() {
     }
   };
 
+  // Função para abrir o modal de check-in
+  const handleRealizarCheckin = (participante: Participante) => {
+    setSelectedParticipante(participante);
+    setShowCheckinModal(true);
+  };
+
   return (<div className="min-h-screen bg-gray-50">
     <Header showLogout={true} />
 
@@ -154,6 +165,7 @@ function DashboardContent() {
             results={searchResults}
             isLoading={isSearching}
             onComprarIngresso={handleConfirmTicketPurchase}
+            onRealizarCheckin={handleRealizarCheckin}
           />
         </div>
       )}
@@ -173,6 +185,19 @@ function DashboardContent() {
           confirmText="Confirmar Compra"
           cancelText="Cancelar"
           type="info"
+        />
+      )}
+
+      {/* Modal de Check-in */}
+      {showCheckinModal && selectedParticipante && (
+        <CheckinModal
+          isOpen={true}
+          participante={selectedParticipante}
+          onClose={() => {
+            setShowCheckinModal(false);
+            // Atualizar a lista de participantes após realizar um check-in
+            handleSearch("");
+          }}
         />
       )}
     </main>

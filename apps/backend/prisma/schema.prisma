@@ -20,27 +20,27 @@ model Participante {
   updatedAt DateTime @updatedAt @map("updated_at") @db.DateTime2
 
   // Relacionamentos
-  ingressos Ingresso[]
+  checkins Checkin[] // Renomeado de ingressos para checkins
 
   @@map("participantes")
   @@index([cpf], name: "IDX_PARTICIPANTES_CPF")
 }
 
-model Ingresso {
+model Checkin { // Renomeado de Ingresso para Checkin
   id                 Int      @id @default(autoincrement())
   participanteId     Int      @map("participante_id")
-  quantidade         Int
-  dataCompra         DateTime @map("data_compra") @db.DateTime2
+  // quantidade         Int      // Removida
+  dataCheckin        DateTime @map("data_checkin") @db.DateTime2 // Renomeado de dataCompra para dataCheckin
   funcionarioCheckin String?  @map("funcionario_checkin") @db.VarChar(100)
-  checkinRealizado   Boolean  @default(false) @map("checkin_realizado")
+  // checkinRealizado   Boolean  @default(false) @map("checkin_realizado") // Removida, a existência do registro já indica check-in
   createdAt          DateTime @default(now()) @map("created_at") @db.DateTime2
   updatedAt          DateTime @updatedAt @map("updated_at") @db.DateTime2
 
   // Relacionamentos
   participante Participante @relation(fields: [participanteId], references: [id], onDelete: Cascade)
 
-  @@map("ingressos")
-  @@index([participanteId], name: "IDX_INGRESSOS_PARTICIPANTE_ID")
-  @@index([dataCompra], name: "IDX_INGRESSOS_DATA_COMPRA")
-  @@index([checkinRealizado], name: "IDX_INGRESSOS_CHECKIN")
+  @@map("checkins") // Renomeado de ingressos para checkins
+  @@index([participanteId], name: "IDX_CHECKINS_PARTICIPANTE_ID") // Renomeado
+  @@index([dataCheckin], name: "IDX_CHECKINS_DATA_CHECKIN")       // Renomeado
+  // @@index([checkinRealizado], name: "IDX_INGRESSOS_CHECKIN") // Removido
 }

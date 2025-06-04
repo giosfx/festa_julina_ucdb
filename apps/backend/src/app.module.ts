@@ -4,9 +4,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { ParticipantesModule } from './modules/participantes/participantes.module';
-import { IngressosModule } from './modules/ingressos/ingressos.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { TestAuthModule } from './modules/test-auth/test-auth.module';
+import { CheckinModule } from './modules/checkin/checkin.module';
 
 @Module({
   imports: [
@@ -16,9 +15,8 @@ import { TestAuthModule } from './modules/test-auth/test-auth.module';
     }),
     PrismaModule,
     AuthModule,
-    TestAuthModule,
     ParticipantesModule,
-    IngressosModule,
+    CheckinModule,
   ],
   controllers: [AppController],
   providers: [AppService],

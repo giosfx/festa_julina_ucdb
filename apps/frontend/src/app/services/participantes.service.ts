@@ -7,7 +7,7 @@ export interface Participante {
   rf?: string;
   cpf: string;
   tipo: 'academico' | 'funcionario';
-  ingressosComprados: number;
+  checkinsRealizados: number;
   createdAt?: string;
   updatedAt?: string;
 }
