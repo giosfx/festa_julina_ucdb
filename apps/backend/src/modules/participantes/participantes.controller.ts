@@ -10,6 +10,7 @@ import {
   HttpStatus,
   UseGuards,
   Request,
+  Query,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -58,14 +59,21 @@ export class ParticipantesController {
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Listar todos os participantes (requer autenticação)',
+    summary:
+      'Listar todos os participantes ou buscar por query (requer autenticação)',
   })
   @ApiResponse({ status: HttpStatus.OK, description: 'Lista de participantes' })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
     description: 'Token inválido ou não fornecido',
   })
-  findAll(@CurrentUser() user: AuthPayload) {
+  findAll(@CurrentUser() user: AuthPayload, @Query('q') query?: string) {
+    if (query) {
+      console.log(
+        `Usuário ${user.username} buscando participantes com query: ${query}`,
+      );
+      return this.participantesService.searchUnified(query);
+    }
     console.log(`Usuário ${user.username} listando participantes`);
     return this.participantesService.findAll();
   }
@@ -180,6 +188,31 @@ export class ParticipantesController {
   findByNome(@Param('nome') nome: string, @CurrentUser() user: AuthPayload) {
     console.log(`Usuário ${user.username} buscando participantes por nome`);
     return this.participantesService.findByNome(nome);
+  }
+
+  @Get('search')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary:
+      'Busca unificada por RA, RF, CPF ou nome usando query parameter (requer autenticação)',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Lista de participantes encontrados',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Token inválido ou não fornecido',
+  })
+  searchByQuery(
+    @Query('query') query: string,
+    @CurrentUser() user: AuthPayload,
+  ) {
+    console.log(
+      `Usuário ${user.username} fazendo busca unificada com query: ${query}`,
+    );
+    return this.participantesService.searchUnified(query);
   }
 
   @Get('search/:query')

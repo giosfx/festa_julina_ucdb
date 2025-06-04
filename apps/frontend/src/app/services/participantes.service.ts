@@ -20,21 +20,14 @@ export interface ParticipanteCreateData {
   tipo: 'academico' | 'funcionario';
 }
 
-export interface ParticipanteSearchParams {
-  query: string;
-  type: 'ra' | 'rf' | 'cpf' | 'nome';
-}
-
 class ParticipantesService {
-  async buscarParticipantes(
-    params: ParticipanteSearchParams
-  ): Promise<Participante[]> {
+  async buscarParticipantes(query: string): Promise<Participante[]> {
     const searchParams = new URLSearchParams({
-      [params.type]: params.query,
+      query: query,
     });
 
     return apiService.get<Participante[]>(
-      `/participantes?${searchParams.toString()}`,
+      `/participantes/search?${searchParams.toString()}`,
       true
     );
   }

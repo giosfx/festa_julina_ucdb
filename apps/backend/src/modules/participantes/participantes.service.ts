@@ -129,6 +129,78 @@ export class ParticipantesService {
     }
   }
 
+  async searchUnified(query: string): Promise<Participante[]> {
+    // Remove espaços da query
+    const cleanQuery = query.trim();
+
+    // Se a query está vazia, retorna lista vazia
+    if (!cleanQuery) {
+      return [];
+    }
+
+    // Remove formatação de CPF (pontos e hífen) para comparação
+    const numericQuery = cleanQuery.replace(/\D/g, '');
+
+    // Busca em paralelo por todos os campos possíveis
+    const searchPromises = [];
+
+    // Se parece com CPF (11 dígitos) - aceita formatado ou não
+    if (/^\d{11}$/.test(numericQuery)) {
+      searchPromises.push(
+        this.prisma.participante.findMany({
+          where: { cpf: numericQuery },
+          include: { ingressos: true },
+        }),
+      );
+    }
+
+    // Se parece com RA (6 dígitos)
+    if (/^\d{6}$/.test(numericQuery)) {
+      searchPromises.push(
+        this.prisma.participante.findMany({
+          where: { ra: numericQuery },
+          include: { ingressos: true },
+        }),
+      );
+    }
+
+    // Se parece com RF (4 dígitos)
+    if (/^\d{4}$/.test(numericQuery)) {
+      searchPromises.push(
+        this.prisma.participante.findMany({
+          where: { rf: numericQuery },
+          include: { ingressos: true },
+        }),
+      );
+    }
+
+    // Busca por nome (sempre incluída se não for apenas números)
+    if (!/^\d+$/.test(cleanQuery) || cleanQuery.length < 4) {
+      searchPromises.push(
+        this.prisma.participante.findMany({
+          where: {
+            nome: {
+              contains: cleanQuery,
+            },
+          },
+          include: { ingressos: true },
+        }),
+      );
+    }
+
+    // Executa todas as buscas em paralelo
+    const results = await Promise.all(searchPromises);
+
+    // Combina todos os resultados e remove duplicatas
+    const allResults = results.flat();
+    const uniqueResults = allResults.filter(
+      (participante, index, self) =>
+        index === self.findIndex((p) => p.id === participante.id),
+    );
+
+    return uniqueResults;
+  }
+
   async update(
     id: number,
     updateParticipanteDto: UpdateParticipanteDto,
