@@ -1,0 +1,31 @@
+{
+    "name": "Festa Julina UCDB",
+    "short_name": "Festa Julina",
+    "description": "Sistema de gerenciamento da Festa Julina UCDB",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#333399",
+    "theme_color": "#333399",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "/icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": [
+        "events",
+        "education"
+    ],
+    "lang": "pt-BR",
+    "dir": "ltr",
+    "scope": "/"
+}
