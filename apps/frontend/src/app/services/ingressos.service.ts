@@ -35,7 +35,11 @@ export interface IngressoStats {
 
 class IngressosService {
   async comprarIngresso(data: IngressoCreateData): Promise<Ingresso> {
-    return apiService.post<Ingresso, IngressoCreateData>('/ingressos', data, true);
+    return apiService.post<Ingresso, IngressoCreateData>(
+      '/ingressos',
+      data,
+      true
+    );
   }
 
   async listarIngressos(): Promise<Ingresso[]> {

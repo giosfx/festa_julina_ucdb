@@ -101,7 +101,11 @@ class APIService {
     return this.makeRequest<T>(endpoint, { method: 'GET', requiresAuth });
   }
 
-  async post<T, D = Record<string, unknown>>(endpoint: string, data: D, requiresAuth = false): Promise<T> {
+  async post<T, D = Record<string, unknown>>(
+    endpoint: string,
+    data: D,
+    requiresAuth = false
+  ): Promise<T> {
     return this.makeRequest<T>(endpoint, {
       method: 'POST',
       body: data as unknown as Record<string, unknown>,
@@ -109,7 +113,11 @@ class APIService {
     });
   }
 
-  async put<T, D = Record<string, unknown>>(endpoint: string, data: D, requiresAuth = false): Promise<T> {
+  async put<T, D = Record<string, unknown>>(
+    endpoint: string,
+    data: D,
+    requiresAuth = false
+  ): Promise<T> {
     return this.makeRequest<T>(endpoint, {
       method: 'PUT',
       body: data as unknown as Record<string, unknown>,

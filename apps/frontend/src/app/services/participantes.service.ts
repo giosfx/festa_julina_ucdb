@@ -25,13 +25,12 @@ export interface ParticipanteSearchParams {
 }
 
 class ParticipantesService {
-  async buscarParticipantes(params: ParticipanteSearchParams): Promise<Participante[]> {
-    const searchParams = new URLSearchParams({
-      query: params.query,
-    });
-
+  async buscarParticipantes(
+    params: ParticipanteSearchParams
+  ): Promise<Participante[]> {
+    // Usando o endpoint correto com parâmetro de rota, não query parameter
     return apiService.get<Participante[]>(
-      `/participantes/search?${searchParams.toString()}`,
+      `/participantes/search/${encodeURIComponent(params.query)}`,
       true
     );
   }
@@ -41,14 +40,22 @@ class ParticipantesService {
   }
 
   async criarParticipante(data: ParticipanteCreateData): Promise<Participante> {
-    return apiService.post<Participante, ParticipanteCreateData>('/participantes', data, true);
+    return apiService.post<Participante, ParticipanteCreateData>(
+      '/participantes',
+      data,
+      true
+    );
   }
 
   async atualizarParticipante(
     id: string,
     data: Partial<ParticipanteCreateData>
   ): Promise<Participante> {
-    return apiService.put<Participante, Partial<ParticipanteCreateData>>(`/participantes/${id}`, data, true);
+    return apiService.put<Participante, Partial<ParticipanteCreateData>>(
+      `/participantes/${id}`,
+      data,
+      true
+    );
   }
 
   async excluirParticipante(id: string): Promise<void> {
