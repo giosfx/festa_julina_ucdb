@@ -1,173 +1,173 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import LoadingSpinner from '../components/LoadingSpinner';
+import Header from '../components/Header';
+import SearchBar from '../components/SearchBar';
+import SearchResults from '../components/SearchResults';
+import { ConfirmationModal } from '../components/Modal';
+import { ProtectedRoute } from '../components/ProtectedRoute';
+import { participantesService, type Participante } from '../services/participantes.service';
+import { ingressosService } from '../services/ingressos.service';
+import { APIError } from '../services/api.service';
+
+function DashboardContent() {
+  const { user } = useAuth();
+
+  // Estados da busca
+  const [searchResults, setSearchResults] = useState<Participante[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string>('');
+
+  // Estados do modal de confirmação
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<{
+    participanteId: string;
+    participanteNome: string;
+    quantidade: number;
+  } | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // Função de busca integrada com o backend
+  const handleSearch = async (query: string, type: 'ra' | 'rf' | 'cpf' | 'nome') => {
+    setIsSearching(true);
+    setSearchError('');
+    setSearchResults([]);
+
+    try {
+      const results = await participantesService.buscarParticipantes({
+        query,
+        type,
+      });
+      setSearchResults(results);
+    } catch (error) {
+      if (error instanceof APIError) {
+        setSearchError(error.message);
+      } else {
+        setSearchError('Erro ao buscar participantes. Tente novamente.');
+      }
+      console.error('Erro na busca:', error);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+  // Função para confirmar compra de ingresso
+  const handleConfirmTicketPurchase = async (participanteId: string, quantidade: number) => {
+    const participante = searchResults.find(p => p.id === participanteId);
+    if (!participante) return;
+
+    setConfirmAction({
+      participanteId,
+      participanteNome: participante.nome,
+      quantidade
+    });
+    setShowConfirmModal(true);
+  };
+
+  // Função para processar a compra de ingresso usando o backend
+  const handleProcessTicketPurchase = async () => {
+    if (!confirmAction) return;
+
+    setIsProcessing(true);
+
+    try {
+      await ingressosService.comprarIngresso({
+        participanteId: confirmAction.participanteId,
+        quantidade: confirmAction.quantidade,
+      });
+
+      // Atualizar o estado local
+      setSearchResults(prev =>
+        prev.map(p =>
+          p.id === confirmAction.participanteId
+            ? { ...p, ingressosComprados: p.ingressosComprados + confirmAction.quantidade }
+            : p
+        )
+      );
+
+      setShowConfirmModal(false);
+      setConfirmAction(null);
+      alert(`Ingresso(s) registrado(s) com sucesso para ${confirmAction.participanteNome}!`);
+    } catch (error) {
+      console.error('Erro ao processar compra:', error);
+      if (error instanceof APIError) {
+        alert(`Erro ao registrar ingresso: ${error.message}`);
+      } else {
+        alert('Erro ao registrar ingresso. Tente novamente.');
+      }
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  return (<div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5">
+    <Header showLogout={true} />
+
+    <div className="container mx-auto px-4 py-6 max-w-6xl">
+      <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              Check-in - Festa Julina UCDB
+            </h1>            <div className="text-sm text-gray-600 space-y-1">
+              <p>Usuário: {user?.username}</p>
+              {user?.email && <p>Email: {user.email}</p>}
+              <p className="text-xs">Roles: {user?.roles.join(', ') || 'Nenhuma'}</p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2 text-sm">
+            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+            <span className="text-gray-600">Sistema Online</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          Buscar Participante
+        </h2>
+        <SearchBar onSearch={handleSearch} isLoading={isSearching} />
+
+        {searchError && (
+          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-700 text-sm">{searchError}</p>
+          </div>
+        )}
+      </div>
+
+      {(searchResults.length > 0 || isSearching) && (
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Resultados da Busca
+          </h3>            <SearchResults
+            results={searchResults}
+            isLoading={isSearching}
+            onComprarIngresso={handleConfirmTicketPurchase}
+          />
+        </div>
+      )}        {showConfirmModal && confirmAction && (
+        <ConfirmationModal
+          isOpen={true}
+          title="Confirmar Compra de Ingresso"
+          message={`Confirma a compra de ${confirmAction.quantidade} ingresso(s) para ${confirmAction.participanteNome}?`}
+          onConfirm={handleProcessTicketPurchase}
+          onClose={() => {
+            setShowConfirmModal(false);
+            setConfirmAction(null);
+          }}
+          isLoading={isProcessing}
+          confirmText="Confirmar Compra"
+          cancelText="Cancelar"
+        />
+      )}
+    </div>
+  </div>);
+}
 
 export default function Dashboard() {
-    const { user, logout, isLoading, isAuthenticated } = useAuth();
-    const router = useRouter();
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-
-    useEffect(() => {
-        if (mounted && !isLoading && !isAuthenticated) {
-            router.push('/');
-        }
-    }, [mounted, isLoading, isAuthenticated, router]);
-
-    const handleLogout = async () => {
-        await logout();
-        router.push('/');
-    };
-
-    if (!mounted || isLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-background">
-                <LoadingSpinner />
-            </div>
-        );
-    }
-
-    if (!isAuthenticated || !user) {
-        return null;
-    }
-
-    return (
-        <div className="min-h-screen bg-background">
-            {/* Header */}
-            <header className="bg-white shadow-sm border-b border-gray-200">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center h-16">
-                        <div className="flex items-center">
-                            <h1 className="text-xl font-semibold text-foreground">
-                                Festa Julina UCDB
-                            </h1>
-                        </div>
-                        <div className="flex items-center space-x-4">
-                            <div className="text-sm text-gray-600">
-                                Olá, <span className="font-medium">{user.name || user.username}</span>
-                            </div>
-                            <button
-                                onClick={handleLogout}
-                                className="bg-secondary text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-secondary-dark transition-colors"
-                            >
-                                Sair
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            {/* Main Content */}
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div className="space-y-8">
-                    {/* Welcome Section */}
-                    <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                        <h2 className="text-2xl font-bold text-foreground mb-4">
-                            Bem-vindo ao Sistema de Gerenciamento
-                        </h2>
-                        <p className="text-gray-600 mb-4">
-                            Sistema para gerenciamento da Festa Julina UCDB 2025
-                        </p>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <div className="bg-primary-light p-4 rounded-lg">
-                                <h3 className="font-semibold text-primary mb-2">Seu Perfil</h3>
-                                <p className="text-sm text-gray-600">Usuário: {user.username}</p>
-                                {user.email && (
-                                    <p className="text-sm text-gray-600">Email: {user.email}</p>
-                                )}
-                                <p className="text-sm text-gray-600">
-                                    Roles: {user.roles.join(', ') || 'Nenhuma'}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Features Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow">
-                            <div className="flex items-center justify-center w-12 h-12 bg-primary-light rounded-lg mb-4">
-                                <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
-                                </svg>
-                            </div>
-                            <h3 className="text-lg font-semibold text-foreground mb-2">
-                                Ingressos
-                            </h3>
-                            <p className="text-gray-600 text-sm mb-4">
-                                Gerenciar vendas e controle de ingressos
-                            </p>
-                            <button className="w-full bg-primary text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-primary-dark transition-colors">
-                                Acessar
-                            </button>
-                        </div>
-
-                        <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow">
-                            <div className="flex items-center justify-center w-12 h-12 bg-primary-light rounded-lg mb-4">
-                                <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                </svg>
-                            </div>
-                            <h3 className="text-lg font-semibold text-foreground mb-2">
-                                Participantes
-                            </h3>
-                            <p className="text-gray-600 text-sm mb-4">
-                                Gerenciar cadastro de participantes
-                            </p>
-                            <button className="w-full bg-primary text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-primary-dark transition-colors">
-                                Acessar
-                            </button>
-                        </div>
-
-                        <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow">
-                            <div className="flex items-center justify-center w-12 h-12 bg-primary-light rounded-lg mb-4">
-                                <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                                </svg>
-                            </div>
-                            <h3 className="text-lg font-semibold text-foreground mb-2">
-                                Relatórios
-                            </h3>
-                            <p className="text-gray-600 text-sm mb-4">
-                                Visualizar relatórios e estatísticas
-                            </p>
-                            <button className="w-full bg-primary text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-primary-dark transition-colors">
-                                Acessar
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Quick Stats */}
-                    <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                        <h3 className="text-lg font-semibold text-foreground mb-4">
-                            Estatísticas Rápidas
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <div className="text-center p-4 bg-gray-50 rounded-lg">
-                                <div className="text-2xl font-bold text-primary">0</div>
-                                <div className="text-sm text-gray-600">Ingressos Vendidos</div>
-                            </div>
-                            <div className="text-center p-4 bg-gray-50 rounded-lg">
-                                <div className="text-2xl font-bold text-primary">0</div>
-                                <div className="text-sm text-gray-600">Participantes</div>
-                            </div>
-                            <div className="text-center p-4 bg-gray-50 rounded-lg">
-                                <div className="text-2xl font-bold text-secondary">R$ 0,00</div>
-                                <div className="text-sm text-gray-600">Receita Total</div>
-                            </div>
-                            <div className="text-center p-4 bg-gray-50 rounded-lg">
-                                <div className="text-2xl font-bold text-primary">0</div>
-                                <div className="text-sm text-gray-600">Eventos Ativos</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </main>
-        </div>
-    );
+  return (
+    <ProtectedRoute requiredRoles={['ADMIN', 'OPERADOR']}>
+      <DashboardContent />
+    </ProtectedRoute>
+  );
 }

@@ -19,16 +19,27 @@ export function useAuth(): UseAuthReturn {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   // Verificar se o usuário já está autenticado ao carregar a página
   useEffect(() => {
-    const checkAuthStatus = () => {
+    const checkAuthStatus = async () => {
       try {
         const isAuth = authService.isAuthenticated();
         if (isAuth) {
-          const { user: storedUser } = authService.getStoredTokens();
-          setUser(storedUser);
-          setIsAuthenticated(true);
+          // Validar com o backend e obter dados atualizados
+          const isValidOnServer = await authService.isAuthenticatedAsync();
+          if (isValidOnServer) {
+            const userData = await authService.getCurrentUser();
+            if (userData) {
+              setUser(userData);
+              setIsAuthenticated(true);
+            } else {
+              // Se não conseguir obter dados do usuário, limpar tokens
+              authService.clearTokens();
+            }
+          } else {
+            // Token inválido no servidor, limpar tokens
+            authService.clearTokens();
+          }
         }
       } catch (err) {
         console.error('Erro ao verificar status de autenticação:', err);

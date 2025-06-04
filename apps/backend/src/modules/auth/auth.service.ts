@@ -45,8 +45,14 @@ export class AuthService {
 
   async validateKeycloakToken(token: string): Promise<KeycloakUser> {
     try {
+      const url = `${this.keycloakUrl}/realms/${this.realm}/protocol/openid-connect/userinfo`;
+      
+      if (!token) {
+        throw new Error('Token não fornecido');
+      }
+      
       const response = await axios.post(
-        `${this.keycloakUrl}/realms/${encodeURIComponent(this.realm)}/protocol/openid-connect/userinfo`,
+        url,
         {},
         {
           headers: {
@@ -56,7 +62,7 @@ export class AuthService {
       );
 
       return response.data as KeycloakUser;
-    } catch (error) {
+    } catch (error: any) {
       throw new UnauthorizedException('Token inválido ou expirado');
     }
   }

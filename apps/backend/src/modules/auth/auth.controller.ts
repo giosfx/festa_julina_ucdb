@@ -6,6 +6,7 @@ import {
   UseGuards,
   Request,
 } from '@nestjs/common';
+import { IsString, IsNotEmpty } from 'class-validator';
 import { AuthService } from './auth.service';
 import { AuthGuard } from './guards/auth.guard';
 import { Roles } from './decorators/roles.decorator';
@@ -13,6 +14,8 @@ import { RolesGuard } from './guards/roles.guard';
 import { AuthPayload } from './auth.service';
 
 export class LoginDto {
+  @IsString()
+  @IsNotEmpty()
   keycloakToken: string;
 }
 

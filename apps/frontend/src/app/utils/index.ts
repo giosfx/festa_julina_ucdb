@@ -1,4 +1,4 @@
-import { VALIDATION, ERROR_MESSAGES } from '../constants';
+import { VALIDATION } from '../constants';
 
 // Utilitários de validação
 export const validation = {
@@ -55,7 +55,6 @@ export const format = {
       year: 'numeric',
     }).format(date);
   },
-
   /**
    * Formata hora para formato brasileiro
    */
@@ -64,6 +63,65 @@ export const format = {
       hour: '2-digit',
       minute: '2-digit',
     }).format(date);
+  },
+
+  /**
+   * Formata RA (6 dígitos numéricos)
+   */
+  formatRA: (input: string): string => {
+    return input.replace(/\D/g, '').slice(0, 6);
+  },
+
+  /**
+   * Formata RF (4 dígitos numéricos)
+   */
+  formatRF: (input: string): string => {
+    return input.replace(/\D/g, '').slice(0, 4);
+  },
+
+  /**
+   * Formata CPF com máscara
+   */
+  formatCPF: (input: string): string => {
+    const numbers = input.replace(/\D/g, '').slice(0, 11);
+    if (numbers.length <= 3) return numbers;
+    if (numbers.length <= 6)
+      return `${numbers.slice(0, 3)}.${numbers.slice(3)}`;
+    if (numbers.length <= 9)
+      return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6)}`;
+    return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6, 9)}-${numbers.slice(9)}`;
+  },
+
+  /**
+   * Valida CPF
+   */
+  validateCPF: (cpf: string): boolean => {
+    const numbers = cpf.replace(/\D/g, '');
+
+    if (numbers.length !== 11) return false;
+
+    // Verifica se todos os dígitos são iguais
+    if (/^(\d)\1{10}$/.test(numbers)) return false;
+
+    // Validação do primeiro dígito verificador
+    let sum = 0;
+    for (let i = 0; i < 9; i++) {
+      sum += parseInt(numbers[i]) * (10 - i);
+    }
+    let digit1 = 11 - (sum % 11);
+    if (digit1 >= 10) digit1 = 0;
+
+    if (parseInt(numbers[9]) !== digit1) return false;
+
+    // Validação do segundo dígito verificador
+    sum = 0;
+    for (let i = 0; i < 10; i++) {
+      sum += parseInt(numbers[i]) * (11 - i);
+    }
+    let digit2 = 11 - (sum % 11);
+    if (digit2 >= 10) digit2 = 0;
+
+    return parseInt(numbers[10]) === digit2;
   },
 };
 
@@ -97,7 +155,6 @@ export const storage = {
       return defaultValue || null;
     }
   },
-
   set: <T>(key: string, value: T): boolean => {
     try {
       if (typeof window === 'undefined') return false;
