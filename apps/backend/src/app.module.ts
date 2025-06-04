@@ -5,6 +5,8 @@ import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { ParticipantesModule } from './modules/participantes/participantes.module';
 import { IngressosModule } from './modules/ingressos/ingressos.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { TestAuthModule } from './modules/test-auth/test-auth.module';
 
 @Module({
   imports: [
@@ -13,6 +15,8 @@ import { IngressosModule } from './modules/ingressos/ingressos.module';
       envFilePath: '.env',
     }),
     PrismaModule,
+    AuthModule,
+    TestAuthModule,
     ParticipantesModule,
     IngressosModule,
   ],

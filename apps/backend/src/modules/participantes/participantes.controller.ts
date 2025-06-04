@@ -8,10 +8,22 @@ import {
   Delete,
   ParseIntPipe,
   HttpStatus,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { ParticipantesService } from './participantes.service';
 import { CreateParticipanteDto, UpdateParticipanteDto } from '@repo/shared';
+import { AuthGuard } from '../auth/guards/auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { AuthPayload } from '../auth/auth.service';
 
 @ApiTags('participantes')
 @Controller('participantes')
@@ -68,7 +80,9 @@ export class ParticipantesController {
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Atualizar participante' })
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Atualizar participante (requer autenticação)' })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Participante atualizado com sucesso',
@@ -81,15 +95,24 @@ export class ParticipantesController {
     status: HttpStatus.CONFLICT,
     description: 'CPF já cadastrado',
   })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Token inválido ou não fornecido',
+  })
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateParticipanteDto: UpdateParticipanteDto,
+    @CurrentUser() user: AuthPayload,
   ) {
+    console.log(`Usuário ${user.username} atualizando participante ${id}`);
     return this.participantesService.update(id, updateParticipanteDto);
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Remover participante' })
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('admin')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Remover participante (apenas administradores)' })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Participante removido com sucesso',
@@ -98,7 +121,19 @@ export class ParticipantesController {
     status: HttpStatus.NOT_FOUND,
     description: 'Participante não encontrado',
   })
-  remove(@Param('id', ParseIntPipe) id: number) {
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Token inválido ou não fornecido',
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: 'Acesso negado - apenas administradores',
+  })
+  remove(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: AuthPayload,
+  ) {
+    console.log(`Admin ${user.username} removendo participante ${id}`);
     return this.participantesService.remove(id);
   }
 }
