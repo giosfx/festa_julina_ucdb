@@ -8,10 +8,19 @@ import {
   Delete,
   ParseIntPipe,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { IngressosService } from './ingressos.service';
 import { CreateIngressoDto, UpdateIngressoDto } from '@repo/shared';
+import { AuthGuard } from '../auth/guards/auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { AuthPayload } from '../auth/auth.service';
 
 @ApiTags('ingressos')
 @Controller('ingressos')
@@ -88,7 +97,11 @@ export class IngressosController {
   }
 
   @Patch(':id/checkin')
-  @ApiOperation({ summary: 'Realizar check-in do ingresso' })
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Realizar check-in do ingresso (requer autenticação)',
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Check-in realizado com sucesso',
@@ -101,11 +114,16 @@ export class IngressosController {
     status: HttpStatus.BAD_REQUEST,
     description: 'Check-in já foi realizado',
   })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Token inválido ou não fornecido',
+  })
   realizarCheckin(
     @Param('id', ParseIntPipe) id: number,
-    @Body('funcionario') funcionario: string,
+    @CurrentUser() user: AuthPayload,
   ) {
-    return this.ingressosService.realizarCheckin(id, funcionario);
+    // Usar o username do usuário autenticado como funcionário
+    return this.ingressosService.realizarCheckin(id, user.username);
   }
 
   @Delete(':id')

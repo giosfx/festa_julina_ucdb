@@ -79,6 +79,57 @@ export class ParticipantesController {
     return this.participantesService.findByCpf(cpf);
   }
 
+  @Get('ra/:ra')
+  @ApiOperation({ summary: 'Buscar participante por RA' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Participante encontrado',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Participante não encontrado',
+  })
+  findByRa(@Param('ra') ra: string) {
+    return this.participantesService.findByRa(ra);
+  }
+
+  @Get('rf/:rf')
+  @ApiOperation({ summary: 'Buscar participante por RF' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Participante encontrado',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Participante não encontrado',
+  })
+  findByRf(@Param('rf') rf: string) {
+    return this.participantesService.findByRf(rf);
+  }
+
+  @Get('nome/:nome')
+  @ApiOperation({ summary: 'Buscar participantes por nome (busca parcial)' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Lista de participantes encontrados',
+  })
+  findByNome(@Param('nome') nome: string) {
+    return this.participantesService.findByNome(nome);
+  }
+
+  @Get('search/:query')
+  @ApiOperation({
+    summary:
+      'Busca inteligente por RA (6 dígitos), RF (4 dígitos), CPF (11 dígitos) ou nome (string)',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Lista de participantes encontrados',
+  })
+  search(@Param('query') query: string) {
+    return this.participantesService.search(query);
+  }
+
   @Patch(':id')
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
