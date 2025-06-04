@@ -28,7 +28,9 @@ export class IngressosController {
   constructor(private readonly ingressosService: IngressosService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Criar novo ingresso' })
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Criar novo ingresso (requer autenticação)' })
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: 'Ingresso criado com sucesso',
@@ -37,30 +39,59 @@ export class IngressosController {
     status: HttpStatus.BAD_REQUEST,
     description: 'Dados inválidos ou limite excedido',
   })
-  create(@Body() createIngressoDto: CreateIngressoDto) {
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Token inválido ou não fornecido',
+  })
+  create(
+    @Body() createIngressoDto: CreateIngressoDto,
+    @CurrentUser() user: AuthPayload,
+  ) {
+    console.log(`Usuário ${user.username} criando novo ingresso`);
     return this.ingressosService.create(createIngressoDto);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Listar todos os ingressos' })
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Listar todos os ingressos (requer autenticação)' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Lista de ingressos' })
-  findAll() {
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Token inválido ou não fornecido',
+  })
+  findAll(@CurrentUser() user: AuthPayload) {
+    console.log(`Usuário ${user.username} listando ingressos`);
     return this.ingressosService.findAll();
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Buscar ingresso por ID' })
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Buscar ingresso por ID (requer autenticação)' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Ingresso encontrado' })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
     description: 'Ingresso não encontrado',
   })
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Token inválido ou não fornecido',
+  })
+  findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: AuthPayload,
+  ) {
+    console.log(`Usuário ${user.username} buscando ingresso ${id}`);
     return this.ingressosService.findOne(id);
   }
 
   @Get('participante/:participanteId')
-  @ApiOperation({ summary: 'Buscar ingressos por participante' })
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Buscar ingressos por participante (requer autenticação)',
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Ingressos do participante',
@@ -69,14 +100,24 @@ export class IngressosController {
     status: HttpStatus.NOT_FOUND,
     description: 'Participante não encontrado',
   })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Token inválido ou não fornecido',
+  })
   findByParticipante(
     @Param('participanteId', ParseIntPipe) participanteId: number,
+    @CurrentUser() user: AuthPayload,
   ) {
+    console.log(
+      `Usuário ${user.username} buscando ingressos do participante ${participanteId}`,
+    );
     return this.ingressosService.findByParticipante(participanteId);
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Atualizar ingresso' })
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Atualizar ingresso (requer autenticação)' })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Ingresso atualizado com sucesso',
@@ -89,10 +130,16 @@ export class IngressosController {
     status: HttpStatus.BAD_REQUEST,
     description: 'Dados inválidos ou limite excedido',
   })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Token inválido ou não fornecido',
+  })
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateIngressoDto: UpdateIngressoDto,
+    @CurrentUser() user: AuthPayload,
   ) {
+    console.log(`Usuário ${user.username} atualizando ingresso ${id}`);
     return this.ingressosService.update(id, updateIngressoDto);
   }
 
@@ -127,7 +174,9 @@ export class IngressosController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Remover ingresso' })
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Remover ingresso (requer autenticação)' })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Ingresso removido com sucesso',
@@ -136,7 +185,15 @@ export class IngressosController {
     status: HttpStatus.NOT_FOUND,
     description: 'Ingresso não encontrado',
   })
-  remove(@Param('id', ParseIntPipe) id: number) {
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Token inválido ou não fornecido',
+  })
+  remove(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: AuthPayload,
+  ) {
+    console.log(`Usuário ${user.username} removendo ingresso ${id}`);
     return this.ingressosService.remove(id);
   }
 }
